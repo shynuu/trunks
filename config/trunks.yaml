@@ -1,0 +1,27 @@
+# set the network device for satellite terminal and gateway.
+nic:
+  st: enp0s8
+  gw: enp0s9
+
+# configure the forward and return links available bandwidth in Mbits/s
+bandwidth:
+  forward: 80
+  return: 20
+
+# configure the delay according to the GEO, MEO or LEO satellite and the offset, real delay = delay + or - offset
+delay:
+  value: 20
+  offset: 10
+
+# set the ACM simulation values
+acm:
+  - weight: 1
+    duration: 10
+  - weight: 0.8
+    duration: 10
+  - weight: 0.9
+    duration: 10
+  - weight: 0.5
+    duration: 10
+  - weight: 0.7
+    duration: 10
