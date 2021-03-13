@@ -20,6 +20,8 @@
 
 Trunks simulates a simple DVB-S2/RCS2 satellite system using native linux tools tc and iptables, the following figures depicts the architecture of the software.
 
+It runs under a single VM or Docker.
+
 ## Requirements
 
 **Hardware:** Linux host with two network interfaces UP and configured
@@ -29,17 +31,46 @@ Trunks simulates a simple DVB-S2/RCS2 satellite system using native linux tools 
 Tested using `iperf` between 2 hosts with the following testbed:
 
 - Trunks running under Ubuntu 18.04 VirtualBox VM 1 CPU 1 RAM, golang 1.16.2
-- Host 1 running under Ubuntu 18.04 VirtualBox VM 1 CPU 1 RAM iperf server
-- Host 2 running under Ubuntu 18.04 VirtualBox VM 1 CPU 1 RAM iperf client
+- Host 1 running under Ubuntu 18.04 VirtualBox VM 1 CPU 1 RAM iperf server/client
+- Host 2 running under Ubuntu 18.04 VirtualBox VM 1 CPU 1 RAM iperf client/server
 
 ## Installation and usage
 
 Steps for installation:
 
 ```bash
-git clone 
+git clone https://github.com/shynuu/trunks
+go build -o trunk -x main.go
 ```
 
+Launch trunks with sudo privilege (required for enabling the forwarding and interacting with iptables/tc):
+
+```bash
+sudo ./trunk --config config/trunks.yaml --flush --acm
+```
+
+Launch options are detailed below 
+
+```bash
+NAME:
+   trunks - a simple DVB-S2/DVB-RCS2 simulator
+
+USAGE:
+   trunk [global options] command [command options] [arguments...]
+
+AUTHOR:
+   Youssouf Drif
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --config FILE  Load configuration from FILE (default: not set)
+   --flush        Flush IPTABLES table mangle and clear all TC rules (default: false)
+   --acm          Activate the ACM simulation (default: not activated)
+   --help, -h     show help (default: false)
+
+```
 
 ## Features
 
