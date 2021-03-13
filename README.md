@@ -18,9 +18,9 @@
 
 ## Architecture
 
-Trunks simulates a simple DVB-S2/RCS2 satellite system using native linux tools tc and iptables, the following figures depicts the architecture of the software.
+Trunks is a lightweight DVB-S2/RCS2 satellite system simulator using native linux tools tc and iptables, the following figures depicts the architecture of the software.
 
-It runs under a single VM or Docker.
+It can run under a single VM or Docker.
 
 ## Requirements
 
@@ -49,7 +49,7 @@ Launch trunks with sudo privilege (required for enabling the forwarding and inte
 sudo ./trunk --config config/trunks.yaml --flush --acm
 ```
 
-Launch options are detailed below 
+Launch options are detailed below:
 
 ```bash
 NAME:
@@ -74,23 +74,45 @@ GLOBAL OPTIONS:
 
 ## Features
 
+You need to associate each network interface with a satellite component. The component/interface association is important as it will determine the forward and return link process. Trunks code is based on this [script](script/static_simulation.sh).
+
+Change the config `config/trunks.yaml` file or create a new one.
+
 ```yaml
-# set the network device for satellite terminal and gateway.
 nic:
   st: enp0s8
   gw: enp0s9
+```
 
-# configure the forward and return links available bandwidth in Mbits/s
+### Bandwidth
+
+You can set the bandwidth (in Mbit/s) for the forward and return link
+
+```yaml
 bandwidth:
   forward: 80
   return: 20
+```
 
-# configure the delay according to the GEO, MEO or LEO satellite and the offset, real delay = delay + or - offset
+### Delay
+
+You can set the delay (in ms) to simulate a LEO, MEO or GEO altitude. The delay changes during the simulation and is comprised between 
+
+`delay - offset <= value <= delay + offset`
+
+```yaml
 delay:
   value: 20
   offset: 10
+```
 
-# set the ACM simulation values
+### ACM
+
+When you launch Trunks with the option `--acm`, the ACM mechanism of DVB-S2/RCS2 systems is simulated.
+
+The maximum bandwidth of the forward and return link will vary in function of values set in the config file:
+
+```yaml
 acm:
   - weight: 1
     duration: 10
@@ -104,8 +126,4 @@ acm:
     duration: 10
 ```
 
-### Bandwidth
-
-### Delay
-
-### ACM
+The program picks a random tuple of this list and weights the maximum bandwidth (`forward = weight * forward` and `return = weight * return`) to the link for the `duration` specified (in second). At the end of this duration, it randomly picks another tuple and restarts the process.

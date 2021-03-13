@@ -18,14 +18,12 @@ func main() {
 	app := &cli.App{
 		Name:  "trunks",
 		Usage: "a simple DVB-S2/DVB-RCS2 simulator",
-		// Copyright: "Copyright (c) 2021 Youssouf Drif",
 		Authors: []*cli.Author{
 			{Name: "Youssouf Drif"},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name: "config",
-				// Aliases:     []string{"c"},
+				Name:        "config",
 				Usage:       "Load configuration from `FILE`",
 				Destination: &config,
 				Required:    true,

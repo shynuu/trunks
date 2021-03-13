@@ -1,5 +1,7 @@
 #/bin/bash
 
+# ======= Early version of Trunks using bash script =======
+
 ST_IFACE=enp0s8
 GW_IFACE=enp0s9
 
