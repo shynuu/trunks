@@ -3,6 +3,7 @@ package trunks
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -25,12 +26,12 @@ func CheckInterfaces(st string, gw string) error {
 	ifGW := fmt.Sprintf(path, gw)
 	existST, _ := Exists(ifST)
 	if !existST {
-		fmt.Println("Interface ST does not exists")
+		log.Println("Interface ST does not exists")
 		return errors.New("Interface ST does not exists")
 	}
 	existGW, _ := Exists(ifGW)
 	if !existGW {
-		fmt.Println("Interface GW does not exists")
+		log.Println("Interface GW does not exists")
 		return errors.New("Interface GW does not exists")
 	}
 	return nil

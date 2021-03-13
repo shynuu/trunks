@@ -22,6 +22,11 @@ Trunks is a lightweight DVB-S2/RCS2 satellite system simulator using native linu
 
 It can run under a single VM or Docker.
 
+<img width="800" alt="image" src="https://user-images.githubusercontent.com/41422704/111052860-3fad1780-845f-11eb-9e6b-c24d55909ee1.png">
+</p>
+
+
+
 ## Requirements
 
 **Hardware:** Linux host with two network interfaces UP and configured
@@ -96,9 +101,7 @@ bandwidth:
 
 ### Delay
 
-You can set the delay (in ms) to simulate a LEO, MEO or GEO altitude. The delay changes during the simulation and is comprised between 
-
-`delay - offset <= value <= delay + offset`
+You can set the delay (in ms) to simulate a LEO, MEO or GEO altitude. The delay changes during the simulation and is comprised between `delay - offset <= value <= delay + offset`
 
 ```yaml
 delay:
