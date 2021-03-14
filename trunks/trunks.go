@@ -39,6 +39,19 @@ func runTC(args ...string) error {
 	return nil
 }
 
+func runSYSCTL(args ...string) error {
+	cmd := exec.Command("/sbin/sysctl", args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+	if nil != err {
+		log.Println("Error running /sbin/sysctl:", err)
+		return err
+	}
+	return nil
+}
+
 func FlushTables() error {
 	log.Println("Flushing tables")
 	err := runIPtables("-F", "-t", "mangle")
@@ -51,6 +64,8 @@ func FlushTables() error {
 
 // Run the Trunk link
 func Run(acm bool) {
+
+	runSYSCTL("net.ipv4.ip_forward=1")
 
 	forward := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward)))
 	retun := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return)))
