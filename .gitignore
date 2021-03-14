@@ -15,6 +15,8 @@
 Vagrantfile
 trunk
 trunk_amd64
+trunks_v*
+
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
