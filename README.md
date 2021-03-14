@@ -18,7 +18,7 @@
 
 ## Architecture
 
-Trunks is a lightweight DVB-S2/RCS2 satellite system simulator using native linux tools tc and iptables, the following figures depicts the architecture of the software.
+Trunks is a lightweight DVB-S2/RCS2 satellite system simulator using the native linux tools tc and iptables. The following figure depicts the architecture of the software.
 
 It can run under a single VM or Docker.
 
@@ -91,7 +91,7 @@ nic:
 
 ### Bandwidth
 
-You can set the bandwidth (in Mbit/s) for the forward and return link
+You can set the bandwidth (in Mbit/s) for the forward and return link.
 
 ```yaml
 bandwidth:
@@ -101,7 +101,7 @@ bandwidth:
 
 ### Delay
 
-You can set the delay (in ms) to simulate a LEO, MEO or GEO altitude. The delay changes during the simulation and is comprised between `delay - offset <= value <= delay + offset`
+You can set the delay (in ms) to simulate a LEO, MEO or GEO altitude. The delay changes during the simulation and is comprised between `delay - offset <= value <= delay + offset`.
 
 ```yaml
 delay:
@@ -113,7 +113,7 @@ delay:
 
 When you launch Trunks with the option `--acm`, the ACM mechanism of DVB-S2/RCS2 systems is simulated.
 
-The maximum bandwidth of the forward and return link will vary in function of values set in the config file:
+The maximum bandwidth of the forward and return link will vary according to the values set in the config file:
 
 ```yaml
 acm:
@@ -129,4 +129,4 @@ acm:
     duration: 10
 ```
 
-The program picks a random tuple of this list and weights the maximum bandwidth (`forward = weight * forward` and `return = weight * return`) to the link for the `duration` specified (in second). At the end of this duration, it randomly picks another tuple and restarts the process.
+The program picks a random tuple of this list and weights the maximum bandwidth (`forward = weight * forward` and `return = weight * return`) of the link for the specified `duration` (in seconds). At the end of this duration, it randomly picks another tuple and restarts the process.
