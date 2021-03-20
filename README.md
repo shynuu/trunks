@@ -15,6 +15,7 @@
   - [Bandwidth](#bandwidth)
   - [Delay](#delay)
   - [ACM](#acm)
+- [Docker](#docker)
 
 ## Architecture
 
@@ -79,9 +80,9 @@ GLOBAL OPTIONS:
 
 ## Features
 
-You need to associate each network interface with a satellite component. The component/interface association is important as it will determine the forward and return link process. Trunks code is based on this [script](script/static_simulation.sh).
+Configuration: change the config `config/trunks.yaml` file or create a new one.
 
-Change the config `config/trunks.yaml` file or create a new one.
+You need to associate each network interface with a satellite component. The component/interface association is important as it will determine the forward and return link process. Trunks code is based on this [script](script/static_simulation.sh). You can either set the L2 interface name or the IP address of the interface. Both interfaces must already be configured and UP.
 
 ```yaml
 nic:
@@ -130,3 +131,97 @@ acm:
 ```
 
 The program picks a random tuple of this list and weights the maximum bandwidth (`forward = weight * forward` and `return = weight * return`) of the link for the specified `duration` (in seconds). At the end of this duration, it randomly picks another tuple and restarts the process.
+
+## Docker
+
+You can build the docker image by launching this [script](container/build.sh)
+
+**Example with docker-compose**
+
+> docker-compose.yaml
+
+```yaml
+version: '3.9'
+
+services:
+  trunks_leo:
+    tty: true
+    container_name: trunks_leo
+    image: trunks
+    command: ./trunks --config trunks.yaml --acm
+    volumes:
+      - ./trunks.yaml:/trunks/trunks.yaml
+    cap_add:
+      - NET_ADMIN
+    networks:
+      st:
+        ipv4_address: 10.100.100.2
+      gw:
+        ipv4_address: 10.0.1.2
+
+  client:
+    tty: true
+    container_name: client
+    image: ubuntu:18.04
+    cap_add:
+      - NET_ADMIN
+    networks:
+      st:
+        ipv4_address: 10.100.100.10
+
+  server:
+    tty: true
+    container_name: server
+    image: ubuntu:18.04
+    cap_add:
+      - NET_ADMIN
+    networks:
+      gw:
+        ipv4_address: 10.0.1.10
+
+networks:
+  st:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.200.0/24
+  gw:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.1.0/24
+```
+
+> config.yaml
+
+```yaml
+# set the network device for satellite terminal and gateway.
+nic:
+  st: 10.100.100.2
+  gw: 10.0.1.2
+
+# configure the forward and return links available bandwidth in Mbits/s
+bandwidth:
+  forward: 80
+  return: 20
+
+# configure the delay according to the GEO, MEO or LEO satellite and the offset, real delay = delay + or - offset
+delay:
+  value: 10
+  offset: 10
+
+# set the ACM simulation values
+acm:
+  - weight: 1
+    duration: 10
+  - weight: 0.8
+    duration: 10
+  - weight: 0.9
+    duration: 10
+  - weight: 0.5
+    duration: 10
+  - weight: 0.7
+    duration: 10
+```

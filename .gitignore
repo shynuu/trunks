@@ -14,9 +14,7 @@
 *log
 Vagrantfile
 trunk
-trunk_amd64
-trunks_v*
-
+trunks_amd64
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

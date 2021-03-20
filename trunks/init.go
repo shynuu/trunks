@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"os"
 )
 
@@ -24,16 +25,68 @@ func CheckInterfaces(st string, gw string) error {
 	path := "/sys/class/net/%s/operstate"
 	ifST := fmt.Sprintf(path, st)
 	ifGW := fmt.Sprintf(path, gw)
+	var err1, err2 error
 	existST, _ := Exists(ifST)
 	if !existST {
-		log.Println("Interface ST does not exists")
-		return errors.New("Interface ST does not exists")
+		err1 = errors.New("[L2] Inteface for ST not found")
+		log.Println(err1.Error())
 	}
 	existGW, _ := Exists(ifGW)
 	if !existGW {
-		log.Println("Interface GW does not exists")
-		return errors.New("Interface GW does not exists")
+		err2 = errors.New("[L2] Inteface for GW not found")
+		log.Println(err2.Error())
 	}
+
+	if err1 != nil || err2 != nil {
+		return errors.New("")
+	}
+
+	return nil
+}
+
+func FindInterfaces() error {
+	ip_st := Trunks.NIC.ST
+	ip_gw := Trunks.NIC.GW
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		log.Printf("Error reading interfaces: %+v\n", err.Error())
+		return err
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			log.Printf("localAddresses: %+v\n", err.Error())
+			return err
+		}
+		for _, a := range addrs {
+			switch v := a.(type) {
+			case *net.IPNet:
+				if v.IP.To4().String() == Trunks.NIC.GW {
+					Trunks.NIC.GW = i.Name
+				}
+				if v.IP.To4().String() == Trunks.NIC.ST {
+					Trunks.NIC.ST = i.Name
+				}
+			}
+
+		}
+	}
+
+	var err1, err2 error
+	if ip_st == Trunks.NIC.ST {
+		err1 = errors.New("[L3] Inteface for ST not found")
+		log.Println(err1.Error())
+	}
+
+	if ip_gw == Trunks.NIC.GW {
+		err2 = errors.New("[L3] Inteface for GW not found")
+		log.Println(err2.Error())
+	}
+
+	if err1 != nil || err2 != nil {
+		return errors.New("")
+	}
+
 	return nil
 }
 
@@ -44,5 +97,9 @@ func InitTrunks(file string) error {
 		return err
 	}
 	err = CheckInterfaces(Trunks.NIC.ST, Trunks.NIC.GW)
+	if err != nil {
+		log.Println("Interfaces configuration by IP")
+		err = FindInterfaces()
+	}
 	return err
 }

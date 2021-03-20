@@ -88,10 +88,13 @@ func Run(acm bool) {
 	runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:1")
 
 	if acm {
-		log.Println("ACM activated")
+		log.Println("Starting Trunks with ACM")
 		scheduler := gocron.NewScheduler(time.UTC)
 		scheduler.Every(1).Seconds().Do(RunACM)
 		scheduler.StartBlocking()
+	} else {
+		log.Println("Trunks started without ACM")
+		time.Sleep(time.Duration(1<<63 - 1))
 	}
 
 }
