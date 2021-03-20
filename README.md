@@ -134,94 +134,13 @@ The program picks a random tuple of this list and weights the maximum bandwidth 
 
 ## Docker
 
-You can build the docker image by launching this [script](container/build.sh)
+You can build the docker image by running this [script](container/build.sh)
 
-**Example with docker-compose**
+Then try the [docker-compose](container/docker-compose.yaml) example executing the following commands:
 
-> docker-compose.yaml
-
-```yaml
-version: '3.9'
-
-services:
-  trunks_leo:
-    tty: true
-    container_name: trunks_leo
-    image: trunks
-    command: ./trunks --config trunks.yaml --acm
-    volumes:
-      - ./trunks.yaml:/trunks/trunks.yaml
-    cap_add:
-      - NET_ADMIN
-    networks:
-      st:
-        ipv4_address: 10.100.100.2
-      gw:
-        ipv4_address: 10.0.1.2
-
-  client:
-    tty: true
-    container_name: client
-    image: ubuntu:18.04
-    cap_add:
-      - NET_ADMIN
-    networks:
-      st:
-        ipv4_address: 10.100.100.10
-
-  server:
-    tty: true
-    container_name: server
-    image: ubuntu:18.04
-    cap_add:
-      - NET_ADMIN
-    networks:
-      gw:
-        ipv4_address: 10.0.1.10
-
-networks:
-  st:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.100.200.0/24
-  gw:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.0.1.0/24
+```bash
+cd container
+docker-compose up -d
 ```
 
-> config.yaml
-
-```yaml
-# set the network device for satellite terminal and gateway.
-nic:
-  st: 10.100.100.2
-  gw: 10.0.1.2
-
-# configure the forward and return links available bandwidth in Mbits/s
-bandwidth:
-  forward: 80
-  return: 20
-
-# configure the delay according to the GEO, MEO or LEO satellite and the offset, real delay = delay + or - offset
-delay:
-  value: 10
-  offset: 10
-
-# set the ACM simulation values
-acm:
-  - weight: 1
-    duration: 10
-  - weight: 0.8
-    duration: 10
-  - weight: 0.9
-    duration: 10
-  - weight: 0.5
-    duration: 10
-  - weight: 0.7
-    duration: 10
-```
+You still must configure the routes inside the client and server containers.
