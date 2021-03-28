@@ -1,6 +1,6 @@
 # set the network device for satellite terminal and gateway.
 nic:
-  st: 10.100.100.2
+  st: 10.100.200.2
   gw: 10.0.1.2
 
 # configure the forward and return links available bandwidth in Mbits/s
