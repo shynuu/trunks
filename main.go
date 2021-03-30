@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/shynuu/go-trunks/trunks"
+	trunks "github.com/shynuu/trunks/runtime"
 
 	"github.com/urfave/cli/v2"
 )
