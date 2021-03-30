@@ -21,7 +21,7 @@ services:
     container_name: client
     image: ubuntu:18.04
     cap_add:
-      - NET_ADMINd
+      - NET_ADMIN
     networks:
       st:
         ipv4_address: 10.100.200.10
