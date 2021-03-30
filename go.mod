@@ -1,4 +1,4 @@
-module github.com/shynuu/go-trunks
+module github.com/shynuu/trunks
 
 go 1.15
 
