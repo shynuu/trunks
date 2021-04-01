@@ -28,12 +28,12 @@ func CheckInterfaces(st string, gw string) error {
 	var err1, err2 error
 	existST, _ := Exists(ifST)
 	if !existST {
-		err1 = errors.New("[L2] Inteface for ST not found")
+		err1 = errors.New("[L2] Interface for ST not found")
 		log.Println(err1.Error())
 	}
 	existGW, _ := Exists(ifGW)
 	if !existGW {
-		err2 = errors.New("[L2] Inteface for GW not found")
+		err2 = errors.New("[L2] Interface for GW not found")
 		log.Println(err2.Error())
 	}
 
@@ -74,12 +74,12 @@ func FindInterfaces() error {
 
 	var err1, err2 error
 	if ip_st == Trunks.NIC.ST {
-		err1 = errors.New("[L3] Inteface for ST not found")
+		err1 = errors.New("[L3] Interface for ST not found")
 		log.Println(err1.Error())
 	}
 
 	if ip_gw == Trunks.NIC.GW {
-		err2 = errors.New("[L3] Inteface for GW not found")
+		err2 = errors.New("[L3] Interface for GW not found")
 		log.Println(err2.Error())
 	}
 
