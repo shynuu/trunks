@@ -51,6 +51,8 @@ type TrunksConfig struct {
 	Bandwidth  Bandwidth `yaml:"bandwidth"`
 	Delay      Delay     `yaml:"delay"`
 	ACMList    []*ACM    `yaml:"acm"`
+	QoS        bool
+	Logs       string
 	ACMCounter int
 	ACMIndex   int
 	CurrentACM *ACM

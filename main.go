@@ -14,6 +14,8 @@ func main() {
 	var config string
 	var flush bool = false
 	var acm bool = false
+	var qos bool = false
+	var logs string
 
 	app := &cli.App{
 		Name:  "trunks",
@@ -29,6 +31,13 @@ func main() {
 				Required:    true,
 				DefaultText: "not set",
 			},
+			&cli.StringFlag{
+				Name:        "logs",
+				Usage:       "Log path for the log file",
+				Destination: &logs,
+				Required:    true,
+				DefaultText: "not set",
+			},
 			&cli.BoolFlag{
 				Name:        "flush",
 				Usage:       "Flush IPTABLES table mangle and clear all TC rules",
@@ -40,9 +49,15 @@ func main() {
 				Destination: &acm,
 				DefaultText: "not activated",
 			},
+			&cli.BoolFlag{
+				Name:        "qos",
+				Usage:       "Process traffic using QoS",
+				Destination: &qos,
+				DefaultText: "not activated",
+			},
 		},
 		Action: func(c *cli.Context) error {
-			err := trunks.InitTrunks(config)
+			err := trunks.InitTrunks(config, qos, logs)
 			if err != nil {
 				fmt.Println("Init error, exiting...")
 				os.Exit(1)
@@ -57,7 +72,6 @@ func main() {
 			}
 
 			trunks.Run(acm)
-
 			return nil
 		},
 	}

@@ -91,7 +91,7 @@ func FindInterfaces() error {
 }
 
 // InitTrunks initialize the trunks module
-func InitTrunks(file string) error {
+func InitTrunks(file string, qos bool, logs string) error {
 	err := ParseConf(file)
 	if err != nil {
 		return err
@@ -101,5 +101,7 @@ func InitTrunks(file string) error {
 		log.Println("Interfaces configuration by IP")
 		err = FindInterfaces()
 	}
+	Trunks.QoS = qos
+	Trunks.Logs = logs
 	return err
 }

@@ -5,7 +5,7 @@ services:
     tty: true
     container_name: trunks_leo
     image: trunks
-    command: ./trunks --config trunks.yaml --acm
+    command: ./trunks --config trunks.yaml --acm --qos
     volumes:
       - ./trunks.yaml:/trunks/trunks.yaml
     cap_add:
