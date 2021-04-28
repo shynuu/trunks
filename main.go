@@ -35,7 +35,7 @@ func main() {
 				Name:        "logs",
 				Usage:       "Log path for the log file",
 				Destination: &logs,
-				Required:    true,
+				Required:    false,
 				DefaultText: "not set",
 			},
 			&cli.BoolFlag{
