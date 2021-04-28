@@ -19,7 +19,7 @@ services:
   client:
     tty: true
     container_name: client
-    image: ubuntu:18.04
+    image: client
     cap_add:
       - NET_ADMIN
     networks:
@@ -29,7 +29,7 @@ services:
   server:
     tty: true
     container_name: server
-    image: ubuntu:18.04
+    image: client
     cap_add:
       - NET_ADMIN
     networks:
