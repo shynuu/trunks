@@ -94,39 +94,48 @@ func Run(acm bool) {
 
 		log.Println("Running with QoS")
 
-		forward := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward))-1)
+		forward := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward)))
 		forwardVoIP := fmt.Sprintf("%dmbit", 1)
-		retun := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return))-1)
+		forwardRest := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward))-1)
+		retun := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return)))
 		returnVoIP := fmt.Sprintf("%dmbit", 1)
+		returnRest := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return))-1)
 		delay := fmt.Sprintf("%dms", int64(math.Round(Trunks.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(Trunks.Delay.Offset/2)))
 
 		log.Println("Configure IPTABLES")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-j", "MARK", "--set-mark", "11")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "10")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "10")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-j", "MARK", "--set-mark", "10")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "11")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.ST, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "11")
 
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-j", "MARK", "--set-mark", "21")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "20")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "20")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-j", "MARK", "--set-mark", "20")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "21")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", Trunks.NIC.GW, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "21")
 
 		log.Println("Configure TC")
-		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "root", "handle", "1:0", "htb", "default", "30")
+
+		// Qdisc configuration
+		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "root", "handle", "1:0", "htb", "default", "20")
 		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:0", "classid", "1:1", "htb", "rate", retun)
-		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, offset, "distribution", "normal")
-		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:0", "classid", "1:2", "htb", "rate", returnVoIP)
-		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:2", "handle", "2:1", "netem", "delay", delay, offset, "distribution", "normal")
-		runTC("filter", "add", "dev", Trunks.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "10", "fw", "flowid", "1:2")
-		runTC("filter", "add", "dev", Trunks.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "11", "fw", "flowid", "1:1")
+		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "classid", "1:10", "htb", "rate", returnVoIP, "prio", "0")
+		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal")
+		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "classid", "1:20", "htb", "rate", returnRest, "prio", "3")
+		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal")
+		// Filters
+		runTC("filter", "add", "dev", Trunks.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "11", "fw", "flowid", "1:10")
+		runTC("filter", "add", "dev", Trunks.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "3", "handle", "10", "fw", "flowid", "1:20")
 
-		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "root", "handle", "1:0", "htb", "default", "30")
+		// Qdisc configuration
+		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "root", "handle", "1:0", "htb", "default", "20")
 		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward)
-		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, offset, "distribution", "normal")
-		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:2", "htb", "rate", forwardVoIP)
-		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:2", "handle", "2:1", "netem", "delay", delay, offset, "distribution", "normal")
-		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:2")
-		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "21", "fw", "flowid", "1:1")
+		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0")
+		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal")
+		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forwardRest, "prio", "3")
+		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal")
 
+		// Filters
+		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "21", "fw", "flowid", "1:21")
+		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "3", "handle", "20", "fw", "flowid", "1:20")
 	}
 
 	if acm {
