@@ -134,7 +134,7 @@ func Run(acm bool) {
 		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal")
 
 		// Filters
-		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "21", "fw", "flowid", "1:21")
+		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "21", "fw", "flowid", "1:10")
 		runTC("filter", "add", "dev", Trunks.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:20")
 	}
 
