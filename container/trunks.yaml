@@ -25,3 +25,5 @@ acm:
     duration: 10
   - weight: 0.7
     duration: 10
+  - weight: 0.1
+    duration: 10
