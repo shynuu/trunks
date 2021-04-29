@@ -1,3 +1,4 @@
+// Package trunks define the trunk runtime
 package trunks
 
 import (
@@ -23,8 +24,8 @@ func RunACM(qos bool) {
 		if qos {
 			forward = fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward*Trunks.CurrentACM.Weight))-1)
 			retun = fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return*Trunks.CurrentACM.Weight))-1)
-			runTC("class", "change", "dev", Trunks.NIC.GW, "parent", "1:0", "classid", "1:20", "htb", "rate", retun, "prio", "3")
-			runTC("class", "change", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forward, "prio", "3")
+			runTC("class", "change", "dev", Trunks.NIC.GW, "parent", "1:0", "classid", "1:20", "htb", "rate", retun, "prio", "1")
+			runTC("class", "change", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forward, "prio", "1")
 
 		} else {
 			forward = fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward*Trunks.CurrentACM.Weight)))
