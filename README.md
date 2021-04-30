@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/shynuu/trunks/releases/tag/1.0"><img src="https://img.shields.io/badge/Release-v1.0-blue?logo=go" alt="Freecli 5G"/></a>
+<a href="https://github.com/shynuu/trunks/releases/tag/2.0"><img src="https://img.shields.io/badge/Release-v2.0-blue?logo=go" alt="Freecli 5G"/></a>
 <img src="https://img.shields.io/badge/OS-Linux-g" alt="OS Linux"/>
-<a href="https://github.com/shynuu/trunks/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="Apache 2 License"/></a>
+<a href="https://github.com/shynuu/trunks/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT License"/></a>
 </p>
 
 - [Architecture](#architecture)
@@ -15,6 +15,7 @@
   - [Bandwidth](#bandwidth)
   - [Delay](#delay)
   - [ACM](#acm)
+  - [Quality of Service (QoS)](#quality-of-service-qos)
 - [Docker](#docker)
 
 ## Architecture
@@ -25,7 +26,6 @@ It can run under a single VM or Docker.
 
 <img width="800" alt="image" src="https://user-images.githubusercontent.com/41422704/111052860-3fad1780-845f-11eb-9e6b-c24d55909ee1.png">
 </p>
-
 
 
 ## Requirements
@@ -52,7 +52,7 @@ go build -o trunk -x main.go
 Launch trunks with sudo privilege (required for enabling the forwarding and interacting with iptables/tc):
 
 ```bash
-sudo ./trunk --config config/trunks.yaml --flush --acm
+sudo ./trunk --config config/trunks.yaml --flush --acm --qos
 ```
 
 Launch options are detailed below:
@@ -74,6 +74,7 @@ GLOBAL OPTIONS:
    --config FILE  Load configuration from FILE (default: not set)
    --flush        Flush IPTABLES table mangle and clear all TC rules (default: false)
    --acm          Activate the ACM simulation (default: not activated)
+   --qos          Process traffic using QoS (default: not activated)
    --help, -h     show help (default: false)
 
 ```
@@ -92,7 +93,7 @@ nic:
 
 ### Bandwidth
 
-You can set the bandwidth (in Mbit/s) for the forward and return link.
+You can set the bandwidth (in Mbit/s) for the forward and return link. Minimum required is 2 Mbit/s for the forward and return link.
 
 ```yaml
 bandwidth:
@@ -131,6 +132,11 @@ acm:
 ```
 
 The program picks a random tuple of this list and weights the maximum bandwidth (`forward = weight * forward` and `return = weight * return`) of the link for the specified `duration` (in seconds). At the end of this duration, it randomly picks another tuple and restarts the process.
+
+### Quality of Service (QoS)
+
+You can activate the QoS with the option `--qos`. Basically the traffic coming in and out of trunks with the DSCP PHB EF (0x2e) and PHB VA (0x2c) will be processed in a dedicated HTB. This HTB has the highest priority value and has a 1 Mbit/s bandwidth reserved.
+
 
 ## Docker
 
