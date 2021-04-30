@@ -1,6 +1,6 @@
 #/bin/bash
 
-# ======= Early version of Trunks using bash script =======
+# ======= QoS Model used when running Trunks with the `--qos` option =======
 
 ST_IFACE=enp0s8
 GW_IFACE=enp0s9

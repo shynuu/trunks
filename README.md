@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/shynuu/trunks/releases/tag/2.0"><img src="https://img.shields.io/badge/Release-v2.0-blue?logo=go" alt="Freecli 5G"/></a>
+<a href="https://github.com/shynuu/trunks/releases/tag/v2.0"><img src="https://img.shields.io/badge/Release-v2.0-blue?logo=go" alt="Freecli 5G"/></a>
 <img src="https://img.shields.io/badge/OS-Linux-g" alt="OS Linux"/>
 <a href="https://github.com/shynuu/trunks/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT License"/></a>
 </p>
