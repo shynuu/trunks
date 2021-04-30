@@ -135,7 +135,7 @@ The program picks a random tuple of this list and weights the maximum bandwidth 
 
 ### Quality of Service (QoS)
 
-You can activate the QoS with the option `--qos`. Basically the traffic coming in and out of trunks with the DSCP PHB EF (0x2e) and PHB VA (0x2c) will be processed in a dedicated HTB. This HTB has the highest priority value and has a 1 Mbit/s bandwidth reserved.
+You can activate the QoS with the option `--qos`. Basically the traffic coming in and out of trunks with the PHB EF (DSCP 0x2e) and PHB VA (DSCP 0x2c) will be processed in a dedicated HTB. This HTB has the highest priority value and has a 1 Mbit/s bandwidth reserved.
 
 
 ## Docker
