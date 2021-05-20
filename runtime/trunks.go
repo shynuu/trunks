@@ -126,7 +126,7 @@ func Run(acm bool) {
 		runTC("filter", "add", "dev", Trunks.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "10", "fw", "flowid", "1:20")
 
 		// Qdisc configuration
-		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "root", "handle", "1:0", "htb", "default", "20")
+		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "root", "handle", "1:0", "htb", "default", "20", "burst", "30k", "cburst", "30k")
 		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward)
 		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0")
 		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal")
