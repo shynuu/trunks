@@ -98,7 +98,7 @@ func Run(acm bool) {
 		forwardVoIP := fmt.Sprintf("%dmbit", 1)
 		forwardRest := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward))-1)
 		retun := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return)))
-		returnVoIP := fmt.Sprintf("%dmbit", 1)
+		returnVoIP := fmt.Sprintf("%dmbit", 2)
 		returnRest := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return))-1)
 		delay := fmt.Sprintf("%dms", int64(math.Round(Trunks.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(Trunks.Delay.Offset/2)))
