@@ -95,7 +95,7 @@ func Run(acm bool) {
 		log.Println("Running with QoS")
 
 		forward := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward)))
-		forwardVoIP := fmt.Sprintf("%dmbit", 1)
+		forwardVoIP := fmt.Sprintf("%dmbit", 2)
 		forwardRest := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Forward))-1)
 		retun := fmt.Sprintf("%dmbit", int64(math.Round(Trunks.Bandwidth.Return)))
 		returnVoIP := fmt.Sprintf("%dmbit", 2)
@@ -117,7 +117,7 @@ func Run(acm bool) {
 		// Qdisc configuration
 		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "root", "handle", "1:0", "htb", "default", "20")
 		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:0", "classid", "1:1", "htb", "rate", retun, "burst", "30k", "cburst", "30k")
-		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "classid", "1:10", "htb", "rate", returnVoIP, "prio", "0", "burst", "2k", "cburst", "2k")
+		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "classid", "1:10", "htb", "rate", returnVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
 		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal")
 		runTC("class", "add", "dev", Trunks.NIC.GW, "parent", "1:1", "classid", "1:20", "htb", "rate", returnRest, "prio", "1", "burst", "30k", "cburst", "30k")
 		runTC("qdisc", "add", "dev", Trunks.NIC.GW, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal")
@@ -128,7 +128,7 @@ func Run(acm bool) {
 		// Qdisc configuration
 		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "root", "handle", "1:0", "htb", "default", "20")
 		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward, "burst", "30k", "cburst", "30k")
-		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0", "burst", "2k", "cburst", "2k")
+		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
 		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal")
 		runTC("class", "add", "dev", Trunks.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forwardRest, "prio", "1", "burst", "30k", "cburst", "30k")
 		runTC("qdisc", "add", "dev", Trunks.NIC.ST, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal")
