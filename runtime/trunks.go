@@ -14,39 +14,42 @@ import (
 var Trunks *TrunksConfig
 
 func runIPtables(args ...string) error {
-	cmd := exec.Command("/sbin/iptables", args...)
+	cmd := exec.Command("iptables", args...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	err := cmd.Run()
 	if nil != err {
-		log.Println("Error running /sbin/iptables:", err)
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
 		return err
 	}
 	return nil
 }
 
 func runTC(args ...string) error {
-	cmd := exec.Command("/sbin/tc", args...)
+	cmd := exec.Command("tc", args...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	err := cmd.Run()
 	if nil != err {
-		log.Println("Error running /sbin/tc:", err)
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
 		return err
 	}
 	return nil
 }
 
 func runSYSCTL(args ...string) error {
-	cmd := exec.Command("/sbin/sysctl", args...)
+	cmd := exec.Command("sysctl", args...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	err := cmd.Run()
 	if nil != err {
-		log.Println("Error running /sbin/sysctl:", err)
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
 		return err
 	}
 	return nil
