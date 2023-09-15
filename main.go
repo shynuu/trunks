@@ -4,10 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	trunks "github.com/shynuu/trunks/runtime"
 	"github.com/urfave/cli/v2"
 )
+
+// Initialize signals handling
+func initSignals() {
+	cancelChan := make(chan os.Signal, 1)
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	func(_ os.Signal) {}(<-cancelChan)
+	os.Exit(0)
+}
 
 func main() {
 	var config string
@@ -82,7 +92,7 @@ func main() {
 			return nil
 		},
 	}
-
+	go initSignals()
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

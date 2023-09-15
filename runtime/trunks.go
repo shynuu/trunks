@@ -203,7 +203,7 @@ func (t *TrunksConfig) Run() {
 		scheduler.StartBlocking()
 	} else {
 		log.Println("Trunks started without ACM")
-		time.Sleep(time.Duration(1<<63 - 1))
+		select {}
 	}
 
 }
