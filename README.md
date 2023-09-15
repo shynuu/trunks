@@ -71,11 +71,13 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --config FILE  Load configuration from FILE (default: not set)
-   --flush        Flush IPTABLES table mangle and clear all TC rules (default: false)
-   --acm          Activate the ACM simulation (default: not activated)
-   --qos          Process traffic using QoS (default: not activated)
-   --help, -h     show help (default: false)
+   --config FILE                   Load configuration from FILE (default: not set)
+   --logs value                    Log path for the log file (default: not set)
+   --flush                         Flush IPTABLES table mangle and clear all TC rules (default: false)
+   --acm                           Activate the ACM simulation (default: not activated)
+   --qos                           Process traffic using QoS (default: not activated)
+   --disable-kernel-version-check  Disable check for bugged kernel versions (default: kernel version check enabled)
+   --help, -h                      show help (default: false)
 
 ```
 
@@ -150,3 +152,6 @@ docker-compose up -d
 ```
 
 You still must configure the routes inside the client and server containers.
+
+## Known issues
+Some versions of the kernel are known to crash when offset delay is enabled. As a protection, offset delay is by default disabled if you are running on affected versions. You can bypass protection by using the flag `--disable-kernel-version-check`, but this is NOT recommended. See [this issue](https://github.com/shynuu/trunks/issues/6) for details.
