@@ -18,8 +18,9 @@ func main() {
 	var logs string
 
 	app := &cli.App{
-		Name:  "trunks",
-		Usage: "a simple DVB-S2/DVB-RCS2 simulator",
+		Name:                 "trunks",
+		Usage:                "a simple DVB-S2/DVB-RCS2 simulator",
+		EnableBashCompletion: true,
 		Authors: []*cli.Author{
 			{Name: "Youssouf Drif"},
 		},
