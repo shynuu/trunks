@@ -53,6 +53,7 @@ type TrunksConfig struct {
 	ACMList            []*ACM    `yaml:"acm"`
 	QoS                bool
 	Logs               string
+	KernelVersionCheck bool
 	ACMEnabled         bool
 	ACMCounter         int
 	ACMIndex           int

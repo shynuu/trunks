@@ -91,7 +91,7 @@ func (t *TrunksConfig) FindInterfaces() error {
 }
 
 // InitTrunks initialize the trunks module
-func InitTrunks(file string, qos bool, logs string, acm bool) (*TrunksConfig, error) {
+func InitTrunks(file string, qos bool, logs string, acm bool, disable_kernel_version_check bool) (*TrunksConfig, error) {
 	t, err := ParseConf(file)
 	if err != nil {
 		return nil, err
@@ -106,5 +106,6 @@ func InitTrunks(file string, qos bool, logs string, acm bool) (*TrunksConfig, er
 	t.QoS = qos
 	t.Logs = logs
 	t.ACMEnabled = acm
+	t.KernelVersionCheck = !disable_kernel_version_check
 	return t, nil
 }

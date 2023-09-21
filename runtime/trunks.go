@@ -64,6 +64,26 @@ func (t *TrunksConfig) FlushTables() error {
 	return err
 }
 
+func (t *TrunksConfig) isKernelVersionBugged() bool {
+	if t.KernelVersionCheck {
+		return false
+	}
+	// See https://github.com/shynuu/trunks/issues/6
+	cmd := exec.Command("uname", "--kernel-version")
+	out, err := cmd.Output()
+	if err != nil {
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
+		return false
+	}
+	// See https://gist.github.com/louisroyer/90636c07dc4b205b813a56de718d9d09
+	if strings.Contains(string(out), "Debian 6.1.38-") {
+		log.Println("Warning: offset delay will be disabled because you are using Debian with Linux 6.1.38 which is known to crash with this settting. See https://github.com/shynuu/trunks/issues/6 for details.")
+		return true
+	}
+	return false
+}
+
 // Run the Trunk link
 func (t *TrunksConfig) Run() {
 
@@ -76,7 +96,7 @@ func (t *TrunksConfig) Run() {
 		retun := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return)))
 		delay := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Offset/2)))
-		jitter := t.Delay.Offset > 1
+		jitter := t.Delay.Offset > 1 && t.isKernelVersionBugged()
 
 		// qlen formula: 1.5 * bandwidth[bits/s] * latency[s] / mtu[bits]
 		qlenForward := fmt.Sprintf("%d", int64(math.Round(1.5*(t.Bandwidth.Forward*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
@@ -117,7 +137,7 @@ func (t *TrunksConfig) Run() {
 		returnRest := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return))-1)
 		delay := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Offset/2)))
-		jitter := t.Delay.Offset > 1
+		jitter := t.Delay.Offset > 1 && t.isKernelVersionBugged()
 
 		// qlen formula: 1.5 * bandwidth[bits/s] * latency[s] / mtu[bits]
 		qlenForwardVoIP := fmt.Sprintf("%d", int64(math.Round(1.5*(2*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))

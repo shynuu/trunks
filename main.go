@@ -14,6 +14,7 @@ func main() {
 	var flush bool = false
 	var acm bool = false
 	var qos bool = false
+	var disable_kernel_version_check = false
 	var logs string
 
 	app := &cli.App{
@@ -54,9 +55,15 @@ func main() {
 				Destination: &qos,
 				DefaultText: "not activated",
 			},
+			&cli.BoolFlag{
+				Name:        "disable-kernel-version-check",
+				Usage:       "Disable check for bugged kernel versions",
+				Destination: &disable_kernel_version_check,
+				DefaultText: "kernel version check enabled",
+			},
 		},
 		Action: func(c *cli.Context) error {
-			trunksConfig, err := trunks.InitTrunks(config, qos, logs, acm)
+			trunksConfig, err := trunks.InitTrunks(config, qos, logs, acm, disable_kernel_version_check)
 			if err != nil {
 				fmt.Println("Init error, exiting...")
 				os.Exit(1)
