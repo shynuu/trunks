@@ -58,10 +58,10 @@ func runSYSCTL(args ...string) error {
 func FlushTables() error {
 	log.Println("Flushing tables")
 	err := runIPtables("-F", "-t", "mangle")
-	runTC("qdisc", "del", "dev", Trunks.NIC.GW, "root")
 	runTC("filter", "del", "dev", Trunks.NIC.GW)
-	runTC("qdisc", "del", "dev", Trunks.NIC.ST, "root")
+	runTC("qdisc", "del", "dev", Trunks.NIC.GW, "root")
 	runTC("filter", "del", "dev", Trunks.NIC.ST)
+	runTC("qdisc", "del", "dev", Trunks.NIC.ST, "root")
 	return err
 }
 
