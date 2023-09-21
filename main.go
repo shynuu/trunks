@@ -6,7 +6,6 @@ import (
 	"os"
 
 	trunks "github.com/shynuu/trunks/runtime"
-
 	"github.com/urfave/cli/v2"
 )
 
@@ -57,21 +56,21 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			err := trunks.InitTrunks(config, qos, logs)
+			trunksConfig, err := trunks.InitTrunks(config, qos, logs, acm)
 			if err != nil {
 				fmt.Println("Init error, exiting...")
 				os.Exit(1)
 			}
 
 			if flush {
-				err = trunks.FlushTables()
+				err = trunksConfig.FlushTables()
 				if err != nil {
 					fmt.Println("Impossible to flush tables, exiting...")
 					os.Exit(1)
 				}
 			}
 
-			trunks.Run(acm)
+			trunksConfig.Run()
 			return nil
 		},
 	}
