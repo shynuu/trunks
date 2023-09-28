@@ -21,10 +21,10 @@ func Exists(path string) (bool, error) {
 }
 
 // CheckInterfaces checks if the interfaces exist
-func CheckInterfaces(st string, gw string) error {
+func (t *TrunksConfig) CheckInterfaces() error {
 	path := "/sys/class/net/%s/operstate"
-	ifST := fmt.Sprintf(path, st)
-	ifGW := fmt.Sprintf(path, gw)
+	ifST := fmt.Sprintf(path, t.NIC.ST)
+	ifGW := fmt.Sprintf(path, t.NIC.GW)
 	var err1, err2 error
 	existST, _ := Exists(ifST)
 	if !existST {
@@ -44,9 +44,9 @@ func CheckInterfaces(st string, gw string) error {
 	return nil
 }
 
-func FindInterfaces() error {
-	ip_st := Trunks.NIC.ST
-	ip_gw := Trunks.NIC.GW
+func (t *TrunksConfig) FindInterfaces() error {
+	ip_st := t.NIC.ST
+	ip_gw := t.NIC.GW
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		log.Printf("Error reading interfaces: %+v\n", err.Error())
@@ -61,11 +61,11 @@ func FindInterfaces() error {
 		for _, a := range addrs {
 			switch v := a.(type) {
 			case *net.IPNet:
-				if v.IP.To4().String() == Trunks.NIC.GW {
-					Trunks.NIC.GW = i.Name
+				if v.IP.To4().String() == t.NIC.GW {
+					t.NIC.GW = i.Name
 				}
-				if v.IP.To4().String() == Trunks.NIC.ST {
-					Trunks.NIC.ST = i.Name
+				if v.IP.To4().String() == t.NIC.ST {
+					t.NIC.ST = i.Name
 				}
 			}
 
@@ -73,12 +73,12 @@ func FindInterfaces() error {
 	}
 
 	var err1, err2 error
-	if ip_st == Trunks.NIC.ST {
+	if ip_st == t.NIC.ST {
 		err1 = errors.New("[L3] Interface for ST not found")
 		log.Println(err1.Error())
 	}
 
-	if ip_gw == Trunks.NIC.GW {
+	if ip_gw == t.NIC.GW {
 		err2 = errors.New("[L3] Interface for GW not found")
 		log.Println(err2.Error())
 	}
@@ -91,17 +91,21 @@ func FindInterfaces() error {
 }
 
 // InitTrunks initialize the trunks module
-func InitTrunks(file string, qos bool, logs string) error {
-	err := ParseConf(file)
+func InitTrunks(file string, qos bool, logs string, acm bool, disable_kernel_version_check bool) (*TrunksConfig, error) {
+	t, err := ParseConf(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = CheckInterfaces(Trunks.NIC.ST, Trunks.NIC.GW)
-	if err != nil {
+	if err := t.CheckInterfaces(); err != nil {
 		log.Println("Interfaces configuration by IP")
-		err = FindInterfaces()
+		if err := t.FindInterfaces(); err != nil {
+			return nil, err
+		}
 	}
-	Trunks.QoS = qos
-	Trunks.Logs = logs
-	return err
+
+	t.QoS = qos
+	t.Logs = logs
+	t.ACMEnabled = acm
+	t.KernelVersionCheck = !disable_kernel_version_check
+	return t, nil
 }

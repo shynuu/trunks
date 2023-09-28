@@ -8,17 +8,17 @@ import (
 )
 
 // ParseConf read the yaml file and populate the Config instancce
-func ParseConf(file string) error {
+func ParseConf(file string) (*TrunksConfig, error) {
+	var trunksConfig *TrunksConfig
 	path, err := filepath.Abs(file)
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = yaml.Unmarshal(yamlFile, &Trunks)
-	if err != nil {
-		return err
+	if err := yaml.Unmarshal(yamlFile, &trunksConfig); err != nil {
+		return nil, err
 	}
-	return nil
+	return trunksConfig, nil
 }
 
 // Interfaces struct
@@ -47,13 +47,15 @@ type ACM struct {
 
 // TrunksConfig struct
 type TrunksConfig struct {
-	NIC        NIC       `yaml:"nic"`
-	Bandwidth  Bandwidth `yaml:"bandwidth"`
-	Delay      Delay     `yaml:"delay"`
-	ACMList    []*ACM    `yaml:"acm"`
-	QoS        bool
-	Logs       string
-	ACMCounter int
-	ACMIndex   int
-	CurrentACM *ACM
+	NIC                NIC       `yaml:"nic"`
+	Bandwidth          Bandwidth `yaml:"bandwidth"`
+	Delay              Delay     `yaml:"delay"`
+	ACMList            []*ACM    `yaml:"acm"`
+	QoS                bool
+	Logs               string
+	KernelVersionCheck bool
+	ACMEnabled         bool
+	ACMCounter         int
+	ACMIndex           int
+	CurrentACM         *ACM
 }
