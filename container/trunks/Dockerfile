@@ -1,11 +1,9 @@
-FROM golang:1.14 AS builder
+FROM golang:1.22 AS builder
 LABEL maintainer="youssouf.drif"
 
-RUN go get -d github.com/shynuu/trunks
-WORKDIR /go/src/github.com/shynuu/trunks
-RUN go install github.com/shynuu/trunks
+RUN go install github.com/shynuu/trunks@latest
 
-FROM debian:buster-slim
+FROM debian:bookworm-slim
 WORKDIR /trunks
 RUN apt-get update && DEBIAN_FRONTEND=non-interactive apt-get install -qy --no-install-recommends --no-install-suggests \
     iproute2 iptables procps tcpdump iputils-ping \
