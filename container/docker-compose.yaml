@@ -1,6 +1,6 @@
-version: '3.9'
 
 services:
+
   trunks_leo:
     tty: true
     container_name: trunks_leo

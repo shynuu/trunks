@@ -12,6 +12,38 @@ import (
 	"github.com/go-co-op/gocron"
 )
 
+func runIP(args ...string) error {
+	cmd := exec.Command("ip", args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+	if nil != err {
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
+		return err
+	}
+	return nil
+}
+
+// runEbtables executes the ebtables command with the provided arguments.
+// It redirects the command's standard error, output, and input streams to the
+// corresponding os streams. If the command fails, an error message is logged
+// and the error is returned. Otherwise, it returns nil.
+func runEbtables(args ...string) error {
+	cmd := exec.Command("ebtables", args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+	if nil != err {
+		errLog := fmt.Sprintf("Error running %s: %s", cmd.Args[0], err)
+		log.Println(errLog)
+		return err
+	}
+	return nil
+}
+
 func runIPtables(args ...string) error {
 	cmd := exec.Command("iptables", args...)
 	cmd.Stderr = os.Stderr
@@ -82,6 +114,73 @@ func (t *TrunksConfig) isKernelVersionBugged() bool {
 		return true
 	}
 	return false
+}
+
+// SetupBridge sets up a network bridge named "isl-br", adding the ST and GW interfaces to it.
+// If the bridge already exists, it is removed and recreated. The bridge is then enabled.
+// Returns an error if any of the IP commands fail.
+func (t *TrunksConfig) SetupBridge() error {
+	log.Println("Setting up a bridge")
+	// Check if the bridge already exists
+	out, err := exec.Command("ip", "link", "show", "isl-br").Output()
+	if err != nil {
+		if !strings.Contains(string(out), "Device \"isl-br\" does not exist") {
+			log.Println("An error occurred while checking if the bridge already exists")
+			return err
+		}
+	} else {
+		log.Println("The bridge already exists, removing it")
+		// Remove the bridge
+		err = runIP("link", "del", "isl-br")
+		if nil != err {
+			return err
+		}
+	}
+	// Create a bridge
+	err = runIP("link", "add", "isl-br", "type", "bridge")
+	if nil != err {
+		return err
+	}
+	// Add GW to the bridge
+	err = runIP("link", "set", "dev", t.NIC.GW, "master", "isl-br")
+	if nil != err {
+		return err
+	}
+	// Add ST to the bridge
+	err = runIP("link", "set", "dev", t.NIC.ST, "master", "isl-br")
+	if nil != err {
+		return err
+	}
+	// Enable the bridge
+	err = runIP("link", "set", "dev", "isl-br", "up")
+	if nil != err {
+		return err
+	}
+
+	err = runEbtables("-A", "FORWARD", "-P", "DROP")
+	if nil != err {
+		return err
+	}
+	err = runEbtables("-A", "INPUT", "-P", "DROP")
+	if nil != err {
+		return err
+	}
+	err = runEbtables("-A", "OUTPUT", "-P", "DROP")
+	if nil != err {
+		return err
+	}
+
+	err = runEbtables("-t", "filter", "-A", "FORWARD", "-i", t.NIC.ST, "-o", t.NIC.GW, "-j", "ACCEPT")
+	if nil != err {
+		return err
+	}
+
+	err = runEbtables("-t", "filter", "-A", "FORWARD", "-i", t.NIC.GW, "-o", t.NIC.ST, "-j", "ACCEPT")
+	if nil != err {
+		return err
+	}
+
+	return nil
 }
 
 // Run the Trunk link

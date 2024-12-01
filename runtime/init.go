@@ -107,5 +107,6 @@ func InitTrunks(file string, qos bool, logs string, acm bool, disable_kernel_ver
 	t.Logs = logs
 	t.ACMEnabled = acm
 	t.KernelVersionCheck = !disable_kernel_version_check
+	t.SetupBridge()
 	return t, nil
 }

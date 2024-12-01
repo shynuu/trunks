@@ -1,7 +1,7 @@
-FROM golang:1.22 AS builder
-LABEL maintainer="youssouf.drif"
+FROM golang:1.23.3 AS builder
+LABEL maintainer="youssouf.drif@uni.lu"
 
-RUN go install github.com/shynuu/trunks@latest
+RUN go install github.com/shynuu/trunks@isl
 
 FROM debian:bookworm-slim
 WORKDIR /trunks

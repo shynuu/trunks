@@ -1,7 +1,7 @@
 package trunks
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"gopkg.in/yaml.v2"
@@ -11,7 +11,10 @@ import (
 func ParseConf(file string) (*TrunksConfig, error) {
 	var trunksConfig *TrunksConfig
 	path, err := filepath.Abs(file)
-	yamlFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	yamlFile, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
