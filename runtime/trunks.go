@@ -120,7 +120,7 @@ func (t *TrunksConfig) isKernelVersionBugged() bool {
 // If the bridge already exists, it is removed and recreated. The bridge is then enabled.
 // Returns an error if any of the IP commands fail.
 func (t *TrunksConfig) SetupBridge() error {
-	log.Println("Setting up a bridge")
+	log.Println("Setting up the bridge")
 	// Check if the bridge already exists
 	cmd := exec.Command("ip", "link", "show", "isl-br")
 	out, err := cmd.CombinedOutput()
@@ -129,7 +129,7 @@ func (t *TrunksConfig) SetupBridge() error {
 			log.Println("The bridge does not exist, proceeding to create it")
 		} else {
 			log.Println("An error occurred while checking if the bridge already exists:", err)
-			fmt.Println(string(out))
+			log.Println(string(out))
 			return err
 		}
 	} else {
