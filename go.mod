@@ -1,6 +1,6 @@
 module github.com/shynuu/trunks
 
-go 1.22
+go 1.23.1
 
 require (
 	github.com/go-co-op/gocron v1.37.0
