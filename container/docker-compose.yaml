@@ -1,11 +1,11 @@
 
 services:
 
-  trunks_leo:
+  isl:
     tty: true
-    container_name: trunks_leo
+    container_name: isl
     image: trunks
-    command: --config trunks.yaml --acm --qos
+    command: --config trunks.yaml
     volumes:
       - ./trunks.yaml:/trunks/trunks.yaml
     cap_add:

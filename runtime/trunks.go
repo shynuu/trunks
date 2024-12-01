@@ -122,17 +122,21 @@ func (t *TrunksConfig) isKernelVersionBugged() bool {
 func (t *TrunksConfig) SetupBridge() error {
 	log.Println("Setting up a bridge")
 	// Check if the bridge already exists
-	out, err := exec.Command("ip", "link", "show", "isl-br").Output()
+	cmd := exec.Command("ip", "link", "show", "isl-br")
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		if !strings.Contains(string(out), "Device \"isl-br\" does not exist") {
-			log.Println("An error occurred while checking if the bridge already exists")
+		if strings.Contains(string(out), "Device \"isl-br\" does not exist") {
+			log.Println("The bridge does not exist, proceeding to create it")
+		} else {
+			log.Println("An error occurred while checking if the bridge already exists:", err)
+			fmt.Println(string(out))
 			return err
 		}
 	} else {
 		log.Println("The bridge already exists, removing it")
 		// Remove the bridge
 		err = runIP("link", "del", "isl-br")
-		if nil != err {
+		if err != nil {
 			return err
 		}
 	}
