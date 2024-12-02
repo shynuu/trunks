@@ -161,25 +161,25 @@ func (t *TrunksConfig) SetupBridge() error {
 		return err
 	}
 
-	err = runEbtables("-P", "FORWARD", "DROP")
+	err = runEbtables("-A", "FORWARD", "-P", "DROP")
 	if nil != err {
 		return err
 	}
-	err = runEbtables("-P", "INPUT", "DROP")
+	err = runEbtables("-A", "INPUT", "-P", "DROP")
 	if nil != err {
 		return err
 	}
-	err = runEbtables("-P", "OUTPUT", "DROP")
-	if nil != err {
-		return err
-	}
-
-	err = runEbtables("-A", "FORWARD", "-i", t.NIC.ST, "-o", t.NIC.GW, "-j", "ACCEPT")
+	err = runEbtables("-A", "OUTPUT", "-P", "DROP")
 	if nil != err {
 		return err
 	}
 
-	err = runEbtables("-A", "FORWARD", "-i", t.NIC.GW, "-o", t.NIC.ST, "-j", "ACCEPT")
+	err = runEbtables("-t", "filter", "-A", "FORWARD", "-i", t.NIC.ST, "-o", t.NIC.GW, "-j", "ACCEPT")
+	if nil != err {
+		return err
+	}
+
+	err = runEbtables("-t", "filter", "-A", "FORWARD", "-i", t.NIC.GW, "-o", t.NIC.ST, "-j", "ACCEPT")
 	if nil != err {
 		return err
 	}
@@ -195,6 +195,8 @@ func (t *TrunksConfig) Run() {
 	if !t.QoS {
 		log.Println("Running without QoS")
 
+		forward := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Forward)))
+		retun := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return)))
 		delay := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Offset/2)))
 		jitter := t.Delay.Offset > 1 && t.isKernelVersionBugged()
@@ -203,18 +205,28 @@ func (t *TrunksConfig) Run() {
 		qlenForward := fmt.Sprintf("%d", int64(math.Round(1.5*(t.Bandwidth.Forward*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
 		qlenReturn := fmt.Sprintf("%d", int64(math.Round(1.5*(t.Bandwidth.Return*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
 
-		log.Println("Configure TC")
-		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturn)
-		} else {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "root", "netem", "delay", delay, "limit", qlenReturn)
-		}
+		log.Println("Configure IPTABLES")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.ST, "-j", "MARK", "--set-mark", "10")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.GW, "-j", "MARK", "--set-mark", "20")
 
+		log.Println("Configure TC")
+		runTC("qdisc", "add", "dev", t.NIC.GW, "root", "handle", "1:0", "htb", "default", "30")
+		runTC("class", "add", "dev", t.NIC.GW, "parent", "1:0", "classid", "1:1", "htb", "rate", retun, "burst", "30k", "cburst", "30k")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForward)
+			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturn)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "root", "netem", "delay", delay, "limit", qlenForward)
+			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, "limit", qlenReturn)
 		}
+		runTC("filter", "add", "dev", t.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "10", "fw", "flowid", "1:1")
+
+		runTC("qdisc", "add", "dev", t.NIC.ST, "root", "handle", "1:0", "htb", "default", "30")
+		runTC("class", "add", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward, "burst", "30k", "cburst", "30k")
+		if jitter {
+			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForward)
+		} else {
+			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:1", "handle", "2:0", "netem", "delay", delay, "limit", qlenForward)
+		}
+		runTC("filter", "add", "dev", t.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:1")
 
 	} else {
 
