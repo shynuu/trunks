@@ -26,8 +26,8 @@ func ParseConf(file string) (*TrunksConfig, error) {
 
 // Interfaces struct
 type NIC struct {
-	ST string `yaml:"st"`
-	GW string `yaml:"gw"`
+	A string `yaml:"st"`
+	B string `yaml:"gw"`
 }
 
 // Bandwidth struct

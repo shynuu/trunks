@@ -26,6 +26,10 @@ func main() {
 	var qos bool = false
 	var disable_kernel_version_check = false
 	var logs string
+	var if_a string
+	var if_b string
+	var delay float64
+	var offset float64
 
 	app := &cli.App{
 		Name:                 "trunks",
@@ -36,9 +40,30 @@ func main() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "config",
-				Usage:       "Load configuration from `FILE`",
-				Destination: &config,
+				Name:        "if-a",
+				Usage:       "Interface A",
+				Destination: &if_a,
+				Required:    true,
+				DefaultText: "not set",
+			},
+			&cli.StringFlag{
+				Name:        "if-b",
+				Usage:       "Interface B",
+				Destination: &if_b,
+				Required:    true,
+				DefaultText: "not set",
+			},
+			&cli.Float64Flag{
+				Name:        "delay",
+				Usage:       "Delay in ms",
+				Destination: &delay,
+				Required:    true,
+				DefaultText: "not set",
+			},
+			&cli.Float64Flag{
+				Name:        "offset",
+				Usage:       "offset in ms",
+				Destination: &offset,
 				Required:    true,
 				DefaultText: "not set",
 			},
@@ -48,23 +73,6 @@ func main() {
 				Destination: &logs,
 				Required:    false,
 				DefaultText: "not set",
-			},
-			&cli.BoolFlag{
-				Name:        "flush",
-				Usage:       "Flush IPTABLES table mangle and clear all TC rules",
-				Destination: &flush,
-			},
-			&cli.BoolFlag{
-				Name:        "acm",
-				Usage:       "Activate the ACM simulation",
-				Destination: &acm,
-				DefaultText: "not activated",
-			},
-			&cli.BoolFlag{
-				Name:        "qos",
-				Usage:       "Process traffic using QoS",
-				Destination: &qos,
-				DefaultText: "not activated",
 			},
 			&cli.BoolFlag{
 				Name:        "disable-kernel-version-check",

@@ -23,8 +23,8 @@ func Exists(path string) (bool, error) {
 // CheckInterfaces checks if the interfaces exist
 func (t *TrunksConfig) CheckInterfaces() error {
 	path := "/sys/class/net/%s/operstate"
-	ifST := fmt.Sprintf(path, t.NIC.ST)
-	ifGW := fmt.Sprintf(path, t.NIC.GW)
+	ifST := fmt.Sprintf(path, t.NIC.A)
+	ifGW := fmt.Sprintf(path, t.NIC.B)
 	var err1, err2 error
 	existST, _ := Exists(ifST)
 	if !existST {
@@ -45,8 +45,8 @@ func (t *TrunksConfig) CheckInterfaces() error {
 }
 
 func (t *TrunksConfig) FindInterfaces() error {
-	ip_st := t.NIC.ST
-	ip_gw := t.NIC.GW
+	ip_st := t.NIC.A
+	ip_gw := t.NIC.B
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		log.Printf("Error reading interfaces: %+v\n", err.Error())
@@ -61,11 +61,11 @@ func (t *TrunksConfig) FindInterfaces() error {
 		for _, a := range addrs {
 			switch v := a.(type) {
 			case *net.IPNet:
-				if v.IP.To4().String() == t.NIC.GW {
-					t.NIC.GW = i.Name
+				if v.IP.To4().String() == t.NIC.B {
+					t.NIC.B = i.Name
 				}
-				if v.IP.To4().String() == t.NIC.ST {
-					t.NIC.ST = i.Name
+				if v.IP.To4().String() == t.NIC.A {
+					t.NIC.A = i.Name
 				}
 			}
 
@@ -73,12 +73,12 @@ func (t *TrunksConfig) FindInterfaces() error {
 	}
 
 	var err1, err2 error
-	if ip_st == t.NIC.ST {
+	if ip_st == t.NIC.A {
 		err1 = errors.New("[L3] Interface for ST not found")
 		log.Println(err1.Error())
 	}
 
-	if ip_gw == t.NIC.GW {
+	if ip_gw == t.NIC.B {
 		err2 = errors.New("[L3] Interface for GW not found")
 		log.Println(err2.Error())
 	}
@@ -106,6 +106,28 @@ func InitTrunks(file string, qos bool, logs string, acm bool, disable_kernel_ver
 	t.QoS = qos
 	t.Logs = logs
 	t.ACMEnabled = acm
+	t.KernelVersionCheck = !disable_kernel_version_check
+	t.SetupBridge()
+	return t, nil
+}
+
+// InitISL initialize the trunks module for ISL scenario
+func InitISL(if_a string, if_b string, delay float64, offset float64, logs string, disable_kernel_version_check bool) (*TrunksConfig, error) {
+	t := &TrunksConfig{}
+	t.NIC.A = if_a
+	t.NIC.B = if_b
+	t.Delay.Value = delay
+	t.Delay.Offset = offset
+	if err := t.CheckInterfaces(); err != nil {
+		log.Println("Interfaces configuration by IP")
+		if err := t.FindInterfaces(); err != nil {
+			return nil, err
+		}
+	}
+
+	t.QoS = false
+	t.Logs = logs
+	t.ACMEnabled = false
 	t.KernelVersionCheck = !disable_kernel_version_check
 	t.SetupBridge()
 	return t, nil

@@ -24,14 +24,14 @@ func (t *TrunksConfig) RunACM(qos bool) {
 		if qos {
 			forward = fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Forward*t.CurrentACM.Weight))-1)
 			retun = fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return*t.CurrentACM.Weight))-1)
-			runTC("class", "change", "dev", t.NIC.GW, "parent", "1:0", "classid", "1:20", "htb", "rate", retun, "prio", "1")
-			runTC("class", "change", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forward, "prio", "1")
+			runTC("class", "change", "dev", t.NIC.B, "parent", "1:0", "classid", "1:20", "htb", "rate", retun, "prio", "1")
+			runTC("class", "change", "dev", t.NIC.A, "parent", "1:0", "classid", "1:20", "htb", "rate", forward, "prio", "1")
 
 		} else {
 			forward = fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Forward*t.CurrentACM.Weight)))
 			retun = fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return*t.CurrentACM.Weight)))
-			runTC("class", "change", "dev", t.NIC.GW, "parent", "1:0", "classid", "1:1", "htb", "rate", retun)
-			runTC("class", "change", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward)
+			runTC("class", "change", "dev", t.NIC.B, "parent", "1:0", "classid", "1:1", "htb", "rate", retun)
+			runTC("class", "change", "dev", t.NIC.A, "parent", "1:0", "classid", "1:1", "htb", "rate", forward)
 		}
 		log.Println("Setting the forward link bandwidth at", forward)
 		log.Println("Setting the return link bandwidth at", retun)

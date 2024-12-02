@@ -89,10 +89,10 @@ func runSYSCTL(args ...string) error {
 func (t *TrunksConfig) FlushTables() error {
 	log.Println("Flushing tables")
 	err := runIPtables("-F", "-t", "mangle")
-	runTC("filter", "del", "dev", t.NIC.GW)
-	runTC("qdisc", "del", "dev", t.NIC.GW, "root")
-	runTC("filter", "del", "dev", t.NIC.ST)
-	runTC("qdisc", "del", "dev", t.NIC.ST, "root")
+	runTC("filter", "del", "dev", t.NIC.B)
+	runTC("qdisc", "del", "dev", t.NIC.B, "root")
+	runTC("filter", "del", "dev", t.NIC.A)
+	runTC("qdisc", "del", "dev", t.NIC.A, "root")
 	return err
 }
 
@@ -146,12 +146,12 @@ func (t *TrunksConfig) SetupBridge() error {
 		return err
 	}
 	// Add GW to the bridge
-	err = runIP("link", "set", "dev", t.NIC.GW, "master", "isl-br")
+	err = runIP("link", "set", "dev", t.NIC.B, "master", "isl-br")
 	if nil != err {
 		return err
 	}
 	// Add ST to the bridge
-	err = runIP("link", "set", "dev", t.NIC.ST, "master", "isl-br")
+	err = runIP("link", "set", "dev", t.NIC.A, "master", "isl-br")
 	if nil != err {
 		return err
 	}
@@ -174,12 +174,12 @@ func (t *TrunksConfig) SetupBridge() error {
 		return err
 	}
 
-	err = runEbtables("-A", "FORWARD", "-i", t.NIC.ST, "-o", t.NIC.GW, "-j", "ACCEPT")
+	err = runEbtables("-A", "FORWARD", "-i", t.NIC.A, "-o", t.NIC.B, "-j", "ACCEPT")
 	if nil != err {
 		return err
 	}
 
-	err = runEbtables("-A", "FORWARD", "-i", t.NIC.GW, "-o", t.NIC.ST, "-j", "ACCEPT")
+	err = runEbtables("-A", "FORWARD", "-i", t.NIC.B, "-o", t.NIC.A, "-j", "ACCEPT")
 	if nil != err {
 		return err
 	}
@@ -205,15 +205,15 @@ func (t *TrunksConfig) Run() {
 
 		log.Println("Configure TC")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturn)
+			runTC("qdisc", "add", "dev", t.NIC.B, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturn)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "root", "netem", "delay", delay, "limit", qlenReturn)
+			runTC("qdisc", "add", "dev", t.NIC.B, "root", "netem", "delay", delay, "limit", qlenReturn)
 		}
 
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForward)
+			runTC("qdisc", "add", "dev", t.NIC.A, "root", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForward)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "root", "netem", "delay", delay, "limit", qlenForward)
+			runTC("qdisc", "add", "dev", t.NIC.A, "root", "netem", "delay", delay, "limit", qlenForward)
 		}
 
 	} else {
@@ -237,54 +237,54 @@ func (t *TrunksConfig) Run() {
 		qlenReturnRest := fmt.Sprintf("%d", int64(math.Round(1.5*(t.Bandwidth.Return*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
 
 		log.Println("Configure IPTABLES")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.ST, "-j", "MARK", "--set-mark", "10")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.ST, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "11")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.ST, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "11")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.A, "-j", "MARK", "--set-mark", "10")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.A, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "11")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.A, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "11")
 
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.GW, "-j", "MARK", "--set-mark", "20")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.GW, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "21")
-		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.GW, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "21")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.B, "-j", "MARK", "--set-mark", "20")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.B, "-m", "dscp", "--dscp", "0x2c", "-j", "MARK", "--set-mark", "21")
+		runIPtables("-t", "mangle", "-A", "PREROUTING", "-i", t.NIC.B, "-m", "dscp", "--dscp", "0x2e", "-j", "MARK", "--set-mark", "21")
 
 		log.Println("Configure TC")
 
 		// Qdisc configuration
-		runTC("qdisc", "add", "dev", t.NIC.GW, "root", "handle", "1:0", "htb", "default", "20")
-		runTC("class", "add", "dev", t.NIC.GW, "parent", "1:0", "classid", "1:1", "htb", "rate", retun, "burst", "30k", "cburst", "30k")
-		runTC("class", "add", "dev", t.NIC.GW, "parent", "1:1", "classid", "1:10", "htb", "rate", returnVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
+		runTC("qdisc", "add", "dev", t.NIC.B, "root", "handle", "1:0", "htb", "default", "20")
+		runTC("class", "add", "dev", t.NIC.B, "parent", "1:0", "classid", "1:1", "htb", "rate", retun, "burst", "30k", "cburst", "30k")
+		runTC("class", "add", "dev", t.NIC.B, "parent", "1:1", "classid", "1:10", "htb", "rate", returnVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturnVoIP)
+			runTC("qdisc", "add", "dev", t.NIC.B, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturnVoIP)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:10", "handle", "110:", "netem", "delay", delay, "limit", qlenReturnVoIP)
+			runTC("qdisc", "add", "dev", t.NIC.B, "parent", "1:10", "handle", "110:", "netem", "delay", delay, "limit", qlenReturnVoIP)
 		}
-		runTC("class", "add", "dev", t.NIC.GW, "parent", "1:1", "classid", "1:20", "htb", "rate", returnRest, "prio", "1", "burst", "30k", "cburst", "30k")
+		runTC("class", "add", "dev", t.NIC.B, "parent", "1:1", "classid", "1:20", "htb", "rate", returnRest, "prio", "1", "burst", "30k", "cburst", "30k")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturnRest)
+			runTC("qdisc", "add", "dev", t.NIC.B, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenReturnRest)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.GW, "parent", "1:20", "handle", "120:", "netem", "delay", delay, "limit", qlenReturnRest)
+			runTC("qdisc", "add", "dev", t.NIC.B, "parent", "1:20", "handle", "120:", "netem", "delay", delay, "limit", qlenReturnRest)
 		}
 		// Filters
-		runTC("filter", "add", "dev", t.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "11", "fw", "flowid", "1:10")
-		runTC("filter", "add", "dev", t.NIC.GW, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "10", "fw", "flowid", "1:20")
+		runTC("filter", "add", "dev", t.NIC.B, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "11", "fw", "flowid", "1:10")
+		runTC("filter", "add", "dev", t.NIC.B, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "10", "fw", "flowid", "1:20")
 
 		// Qdisc configuration
-		runTC("qdisc", "add", "dev", t.NIC.ST, "root", "handle", "1:0", "htb", "default", "20")
-		runTC("class", "add", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:1", "htb", "rate", forward, "burst", "30k", "cburst", "30k")
-		runTC("class", "add", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
+		runTC("qdisc", "add", "dev", t.NIC.A, "root", "handle", "1:0", "htb", "default", "20")
+		runTC("class", "add", "dev", t.NIC.A, "parent", "1:0", "classid", "1:1", "htb", "rate", forward, "burst", "30k", "cburst", "30k")
+		runTC("class", "add", "dev", t.NIC.A, "parent", "1:0", "classid", "1:10", "htb", "rate", forwardVoIP, "prio", "0", "burst", "3k", "cburst", "3k")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForwardVoIP)
+			runTC("qdisc", "add", "dev", t.NIC.A, "parent", "1:10", "handle", "110:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForwardVoIP)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:10", "handle", "110:", "netem", "delay", delay, "limit", qlenForwardVoIP)
+			runTC("qdisc", "add", "dev", t.NIC.A, "parent", "1:10", "handle", "110:", "netem", "delay", delay, "limit", qlenForwardVoIP)
 		}
-		runTC("class", "add", "dev", t.NIC.ST, "parent", "1:0", "classid", "1:20", "htb", "rate", forwardRest, "prio", "1", "burst", "30k", "cburst", "30k")
+		runTC("class", "add", "dev", t.NIC.A, "parent", "1:0", "classid", "1:20", "htb", "rate", forwardRest, "prio", "1", "burst", "30k", "cburst", "30k")
 		if jitter {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForwardRest)
+			runTC("qdisc", "add", "dev", t.NIC.A, "parent", "1:20", "handle", "120:", "netem", "delay", delay, offset, "distribution", "normal", "limit", qlenForwardRest)
 		} else {
-			runTC("qdisc", "add", "dev", t.NIC.ST, "parent", "1:20", "handle", "120:", "netem", "delay", "limit", qlenForwardRest)
+			runTC("qdisc", "add", "dev", t.NIC.A, "parent", "1:20", "handle", "120:", "netem", "delay", "limit", qlenForwardRest)
 		}
 
 		// Filters
-		runTC("filter", "add", "dev", t.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "21", "fw", "flowid", "1:10")
-		runTC("filter", "add", "dev", t.NIC.ST, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:20")
+		runTC("filter", "add", "dev", t.NIC.A, "protocol", "ip", "parent", "1:0", "prio", "0", "handle", "21", "fw", "flowid", "1:10")
+		runTC("filter", "add", "dev", t.NIC.A, "protocol", "ip", "parent", "1:0", "prio", "1", "handle", "20", "fw", "flowid", "1:20")
 	}
 
 	if t.ACMEnabled {
