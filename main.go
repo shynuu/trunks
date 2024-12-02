@@ -20,10 +20,10 @@ func initSignals() {
 }
 
 func main() {
-	var config string
+	// var config string
 	var flush bool = false
-	var acm bool = false
-	var qos bool = false
+	// var acm bool = false
+	// var qos bool = false
 	var disable_kernel_version_check = false
 	var logs string
 	var if_a string
@@ -82,7 +82,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			trunksConfig, err := trunks.InitTrunks(config, qos, logs, acm, disable_kernel_version_check)
+			trunksConfig, err := trunks.InitISL(if_a, if_b, delay, offset, logs, disable_kernel_version_check)
 			if err != nil {
 				fmt.Println("Init error, exiting...")
 				os.Exit(1)
