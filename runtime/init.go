@@ -129,6 +129,8 @@ func InitISL(if_a string, if_b string, delay float64, offset float64, logs strin
 	t.Logs = logs
 	t.ACMEnabled = false
 	t.KernelVersionCheck = !disable_kernel_version_check
+	t.Bandwidth.Forward = 10000
+	t.Bandwidth.Return = 10000
 	t.SetupBridge()
 	return t, nil
 }
