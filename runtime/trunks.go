@@ -65,7 +65,7 @@ func (t *TrunksConfig) FlushTables() error {
 }
 
 func (t *TrunksConfig) isKernelVersionBugged() bool {
-	if t.KernelVersionCheck {
+	if !t.KernelVersionCheck {
 		return false
 	}
 	// See https://github.com/shynuu/trunks/issues/6
