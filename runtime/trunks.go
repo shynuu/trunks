@@ -96,7 +96,7 @@ func (t *TrunksConfig) Run() {
 		retun := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return)))
 		delay := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Offset/2)))
-		jitter := t.Delay.Offset > 1 && t.isKernelVersionBugged()
+		jitter := t.Delay.Offset > 1 && !t.isKernelVersionBugged()
 
 		// qlen formula: 1.5 * bandwidth[bits/s] * latency[s] / mtu[bits]
 		qlenForward := fmt.Sprintf("%d", int64(math.Round(1.5*(t.Bandwidth.Forward*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
@@ -137,7 +137,7 @@ func (t *TrunksConfig) Run() {
 		returnRest := fmt.Sprintf("%dmbit", int64(math.Round(t.Bandwidth.Return))-1)
 		delay := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Value/2)))
 		offset := fmt.Sprintf("%dms", int64(math.Round(t.Delay.Offset/2)))
-		jitter := t.Delay.Offset > 1 && t.isKernelVersionBugged()
+		jitter := t.Delay.Offset > 1 && !t.isKernelVersionBugged()
 
 		// qlen formula: 1.5 * bandwidth[bits/s] * latency[s] / mtu[bits]
 		qlenForwardVoIP := fmt.Sprintf("%d", int64(math.Round(1.5*(2*1000000)*(t.Delay.Value/(2*1000))/(8*1500))))
