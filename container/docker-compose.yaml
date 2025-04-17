@@ -8,6 +8,7 @@ services:
     command: --config trunks.yaml --acm --qos
     volumes:
       - ./trunks.yaml:/trunks/trunks.yaml
+    privileged: true
     cap_add:
       - NET_ADMIN
     networks:
